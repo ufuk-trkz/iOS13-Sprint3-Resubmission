@@ -14,14 +14,14 @@ enum HTTPMethod: String {
     case delete = "DELETE"
 }
 
-let baseURL = URL(string: "https://tasks-3f211.firebaseio.com/")!
-
 class TaskController {
     
     // We are using this as the "viewDidLoad" of the TaskController
     init() {
         fetchTasksFromServer()
     }
+    
+    let baseURL = URL(string: "https://tasks-3f211.firebaseio.com/")!
     
     func put(task: Task, completion: @escaping () -> Void = { }) {
         let identifier = task.identifier ?? UUID()

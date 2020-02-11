@@ -17,7 +17,8 @@ class DetailViewController: UIViewController {
     @IBOutlet weak var abilitiesLabel: UILabel!
     @IBOutlet weak var searchBar: UISearchBar!
     
-    let apiController = APIController()
+    var apiController = APIController()
+
     var pokemon: Pokemon? {
         didSet {
             updateViews()
@@ -33,24 +34,43 @@ class DetailViewController: UIViewController {
     func getDetails() {
         guard let pokemon = pokemon else { return }
         
-        apiController.fetchImage(at: pokemon.sprite.default) { result in
+        apiController.fetchImage(at: pokemon.sprites!.frontDefault) { result in
             if let image = try? result.get() {
                 DispatchQueue.main.async {
-                    self.pokemonIV.image = image
+                    
                 }
             }
         }
     }
     
     func updateViews() {
-        nameLabel.text = pokemon?.name
-        idLabel.text = String(describing: pokemon?.id)
+        guard let pokemon = pokemon else { return }
+        guard let imageData = try? Data(contentsOf: URL(string: pokemon.sprites!.frontDefault)!) else { return }
+        nameLabel.text = pokemon.name
+        idLabel.text = "ID: \(String(describing: pokemon.id!))"
+        pokemonIV.image = UIImage(data: imageData)
+       
         
+        var abilities: [String] = []
+        var types: [String] = []
+        
+        for newType in pokemon.types {
+            types.append(newType.type.name)
+        }
+
+        for newAbility in pokemon.abilities {
+            abilities.append(newAbility.ability.name)
+        }
+        
+        typesLabel.text = "Type: \(types.last!)"
+        abilitiesLabel.text = "Ability: \(abilities.last!)"
     }
     
-    @IBOutlet weak var search: UISearchBar!
     
     @IBAction func saveTapped(_ sender: Any) {
+        if let pokemon = pokemon {
+        apiController.pokeList.append(pokemon)
+        }
     }
     
     /*
@@ -67,7 +87,7 @@ class DetailViewController: UIViewController {
 
 extension DetailViewController: UISearchBarDelegate {
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-        guard let searchTerm = searchBar.text else { return }
+        guard let searchTerm = searchBar.text?.lowercased() else { return }
        
         apiController.searchPokemon(searchTerm: searchTerm) { result in
             let pokemon = try? result.get()

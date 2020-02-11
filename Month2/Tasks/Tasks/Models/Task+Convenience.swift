@@ -14,20 +14,17 @@ enum TaskPriority: String, CaseIterable {
     case normal
     case high
     case critical
-
-// static var allPriorities: [TaskPriority] {
-//      return = [.low, .normal, .high, .critical]
-// }
 }
 // Core Data already created the Task class, so we just want to add some extra functionality 
 extension Task {
     
+    // This is to turn a Core Data Managed Task into a TaskRepresentation for marshaling to JSON and sending to the server.
     var taskRepresentation: TaskRepresentation? {
         guard let name = name, let priority = priority, let identifier = identifier?.uuidString else { return nil }
         
-        return TaskRepresentation(name: name, notes: notes, identifier: identifier, prioriry: priority)
+        return TaskRepresentation(identifier: identifier, name: name, notes: notes, priority: priority)
     }
-    
+    // This is for creating a new managed object in Core Data
     convenience init(name: String,
                      notes: String?,
                      priority: TaskPriority/* = .normal */,
@@ -42,10 +39,10 @@ extension Task {
         self.priority = priority.rawValue
         self.identifier = identifier
     }
-    
+    // This is for converting TaskRepresentation (comes from JSON) into a Managed Object for Core Data.
     @discardableResult convenience init?(taskRepresentation: TaskRepresentation, context: NSManagedObjectContext) {
         
-        guard let identifier = UUID(uuidString: taskRepresentation.identifier), let priority = TaskPriority(rawValue: taskRepresentation.prioriry) else { return nil }
+        guard let identifier = UUID(uuidString: taskRepresentation.identifier), let priority = TaskPriority(rawValue: taskRepresentation.priority) else { return nil }
         
         self.init(name: taskRepresentation.name,
                   notes: taskRepresentation.notes,

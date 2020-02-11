@@ -12,6 +12,7 @@ import CoreData
 class TasksTableViewController: UITableViewController {
     
     // MARK: - Properties
+    var task: Task?
     
     let taskController = TaskController()
     
@@ -59,15 +60,14 @@ class TasksTableViewController: UITableViewController {
         tableView.reloadData()
     }
 
+
     // MARK: - Table view data source
     
     override func numberOfSections(in tableView: UITableView) -> Int {
-        
         return fetchResultsController.sections?.count ?? 0
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
         return fetchResultsController.sections?[section].numberOfObjects ?? 0
     }
 
@@ -100,6 +100,8 @@ class TasksTableViewController: UITableViewController {
             let task = fetchResultsController.object(at: indexPath)
             // Delete the row from the data source
             taskController.delete(task: task)
+            CoreDataStack.shared.mainContext.delete(task)
+            CoreDataStack.shared.save()
         }
     }
 
@@ -128,11 +130,11 @@ class TasksTableViewController: UITableViewController {
                     return }
             
             detailVC.task = fetchResultsController.object(at: indexPath)
-            detailVC.taskController = taskController
+            detailVC.taskController = self.taskController
             
         } else if segue.identifier == "AddTaskSegue" {
             guard let detailVC = segue.destination as? TaskDetailViewController else { return }
-            detailVC.taskController = taskController
+            detailVC.taskController = self.taskController
         }
     }
 }
